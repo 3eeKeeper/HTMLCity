@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTMLCity - Standalone Mode</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .standalone-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(231, 76, 60, 0.9);
+            color: white;
+            text-align: center;
+            padding: 5px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .game-tabs {
+            display: flex;
+            margin-top: 10px;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 5px;
+            background-color: #34495e;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .tab-button:hover, .tab-button.active {
+            background-color: #2c3e50;
+        }
+        
+        .tab-content {
+            display: none;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .disaster-button {
+            margin: 5px;
+            padding: 5px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .achievement {
+            background-color: rgba(52, 152, 219, 0.1);
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #3498db;
+        }
+        
+        .achievement.unlocked {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-left: 3px solid #2ecc71;
+        }
+        
+        .disaster-warning {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            animation: pulse 1s infinite;
+            z-index: 1001;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .season-spring {
+            background-color: rgba(46, 204, 113, 0.3);
+        }
+        
+        .season-summer {
+            background-color: rgba(243, 156, 18, 0.3);
+        }
+        
+        .season-fall {
+            background-color: rgba(211, 84, 0, 0.3);
+        }
+        
+        .season-winter {
+            background-color: rgba(52, 152, 219, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="standalone-notice">
+        Running in standalone mode (without multiplayer)
+    </div>
+    
+    <div class="game-container">
+        <div class="sidebar">
+            <h1>HTMLCity</h1>
+            <div class="resources">
+                <div class="resource">
+                    <span class="label">Money:</span>
+                    <span id="money">10000</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Population:</span>
+                    <span id="population">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Happiness:</span>
+                    <span id="happiness">50</span>%
+                </div>
+                <div class="resource">
+                    <span class="label">Power:</span>
+                    <span id="power">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Water:</span>
+                    <span id="water">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Jobs:</span>
+                    <span id="jobs">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Unemployed:</span>
+                    <span id="unemployed">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Season:</span>
+                    <span id="season">Spring</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Year:</span>
+                    <span id="year">1</span>
+                </div>
+            </div>
+            <div class="building-menu">
+                <h3>Buildings</h3>
+                <div class="building-group">
+                    <h4>Residential</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="residential_small" data-cost="100">
+                            Small House ($100)
+                        </button>
+                        <button class="building-btn" data-building="residential_medium" data-cost="1000">
+                            Apartment ($1000)
+                        </button>
+                        <button class="building-btn" data-building="residential_large" data-cost="5000">
+                            Condo ($5000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Commercial</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="commercial_small" data-cost="150">
+                            Small Shop ($150)
+                        </button>
+                        <button class="building-btn" data-building="commercial_medium" data-cost="1500">
+                            Mall ($1500)
+                        </button>
+                        <button class="building-btn" data-building="commercial_large" data-cost="7500">
+                            Office ($7500)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Industrial</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="industrial_small" data-cost="300">
+                            Small Factory ($300)
+                        </button>
+                        <button class="building-btn" data-building="industrial_medium" data-cost="3000">
+                            Factory ($3000)
+                        </button>
+                        <button class="building-btn" data-building="industrial_large" data-cost="15000">
+                            Industrial Park ($15000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Utilities</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="power_plant" data-cost="5000">
+                            Power Plant ($5000)
+                        </button>
+                        <button class="building-btn" data-building="water_plant" data-cost="3000">
+                            Water Plant ($3000)
+                        </button>
+                        <button class="building-btn" data-building="solar_plant" data-cost="10000">
+                            Solar Plant ($10000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Special</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="park" data-cost="500">
+                            Park ($500)
+                        </button>
+                        <button class="building-btn" data-building="police_station" data-cost="1000">
+                            Police Station ($1000)
+                        </button>
+                        <button class="building-btn" data-building="fire_station" data-cost="1000">
+                            Fire Station ($1000)
+                        </button>
+                        <button class="building-btn" data-building="hospital" data-cost="3000">
+                            Hospital ($3000)
+                        </button>
+                        <button class="building-btn" data-building="school" data-cost="2000">
+                            School ($2000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Transportation</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="road" data-cost="10">
+                            Road ($10)
+                        </button>
+                        <button class="building-btn" data-building="bridge" data-cost="1000">
+                            Bridge ($1000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Decorative</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="tree" data-cost="20">
+                            Tree ($20)
+                        </button>
+                        <button class="building-btn" data-building="fountain" data-cost="200">
+                            Fountain ($200)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="bulldozer-btn">Bulldozer</button>
+                <button id="save-btn">Save City</button>
+                <button id="load-btn">Load City</button>
+            </div>
+            
+            <div class="game-tabs">
+                <button class="tab-button" data-tab="disasters">Disasters</button>
+                <button class="tab-button" data-tab="achievements">Achievements</button>
+            </div>
+            
+            <div id="disasters" class="tab-content">
+                <h4>Natural Disasters</h4>
+                <p>Trigger a disaster to test your city's resilience:</p>
+                <button class="disaster-button" data-disaster="fire">Fire</button>
+                <button class="disaster-button" data-disaster="flood">Flood</button>
+                <button class="disaster-button" data-disaster="earthquake">Earthquake</button>
+                <button class="disaster-button" data-disaster="tornado">Tornado</button>
+            </div>
+            
+            <div id="achievements" class="tab-content">
+                <h4>City Achievements</h4>
+                <div id="achievement-list">
+                    <!-- Achievements will be dynamically populated here -->
+                </div>
+            </div>
+        </div>
+        <div class="game-area">
+            <canvas id="game-canvas"></canvas>
+        </div>
+    </div>
+    <div id="message-container" class="message-container"></div>
+    
+    <script>
+        // Set multiplayer flag to false for standalone mode
+        window.isStandaloneMode = true;
+    </script>
+    <script src="js/city.js"></script>
+    <script src="js/tiles.js"></script>
+    <script src="js/buildings.js"></script>
+    <script src="js/renderer.js"></script>
+    <script>
+    // Standalone entry point - simplified version of main.js
+    
+    // Game objects
+    let city;
+    let renderer;
+    
+    // Game timing
+    let lastUpdate = Date.now();
+    const TIME_STEP = 1000; // Simulate city every second
+    
+    // Game state
+    let currentSeason = 'Spring';
+    let currentYear = 1;
+    let seasonDay = 0;
+    const DAYS_PER_SEASON = 30; // 30 game days per season
+    let activeDisaster = null;
+    let disasterTimer = 0;
+    
+    // Achievements system
+    const ACHIEVEMENTS = [
+        { id: 'population_100', name: 'Small Town', description: 'Reach 100 residents', unlocked: false, condition: () => city.population >= 100 },
+        { id: 'population_500', name: 'Growing City', description: 'Reach 500 residents', unlocked: false, condition: () => city.population >= 500 },
+        { id: 'population_1000', name: 'Metropolis', description: 'Reach 1000 residents', unlocked: false, condition: () => city.population >= 1000 },
+        { id: 'happiness_90', name: 'Happy Citizens', description: 'Reach 90% happiness', unlocked: false, condition: () => city.happiness >= 90 },
+        { id: 'money_100k', name: 'Wealthy City', description: 'Accumulate $100,000', unlocked: false, condition: () => city.money >= 100000 },
+        { id: 'all_building_types', name: 'Master Builder', description: 'Build one of each building type', unlocked: false, 
+          condition: () => {
+              const buildingTypes = Object.keys(BUILDINGS);
+              for (const category of Object.keys(DEFAULT_BUILDING_SVG)) {
+                  const categoryBuildings = buildingTypes.filter(type => BUILDINGS[type].category === category);
+                  if (!categoryBuildings.some(type => city.hasBuildingType(type))) {
+                      return false;
+                  }
+              }
+              return true;
+          }
+        },
+        { id: 'disaster_survival', name: 'Disaster Survivor', description: 'Survive a natural disaster', unlocked: false, condition: () => false } // Special case, triggered by disaster system
+    ];
+    
+    // Disaster definitions
+    const DISASTERS = {
+        'fire': {
+            name: 'Fire',
+            duration: 10,
+            effect: () => {
+                // Randomly damage buildings
+                const damage = Math.floor(Math.random() * 5) + 1;
+                damageRandomBuildings(damage, (cell) => {
+                    // Fire avoids water areas
+                    return cell.type !== 'water';
+                });
+                return damage;
+            },
+            recoveryMessage: (damage) => `The fire has been put out! ${damage} buildings were damaged.`
+        },
+        'flood': {
+            name: 'Flood',
+            duration: 15,
+            effect: () => {
+                // Flood causes damage near water tiles
+                let damage = 0;
+                for (let y = 0; y < city.height; y++) {
+                    for (let x = 0; x < city.width; x++) {
+                        const cell = city.getCell(x, y);
+                        if (cell.type !== 'water' && cell.occupied) {
+                            // Check if near water
+                            if (isNearWater(x, y)) {
+                                if (Math.random() < 0.6) {
+                                    // 60% chance to damage near-water buildings
+                                    cell.damaged = true;
+                                    damage++;
+                                }
+                            }
+                        }
+                    }
+                }
+                return damage;
+            },
+            recoveryMessage: (damage) => `The flood waters have receded! ${damage} buildings near water were damaged.`
+        },
+        'earthquake': {
+            name: 'Earthquake',
+            duration: 5,
+            effect: () => {
+                // Earthquake has a chance to destroy buildings entirely
+                const damage = Math.floor(Math.random() * 8) + 3;
+                damageRandomBuildings(damage, null, 0.3); // 30% chance of full destruction
+                return damage;
+            },
+            recoveryMessage: (damage) => `The earthquake is over! ${damage} buildings were damaged or destroyed.`
+        },
+        'tornado': {
+            name: 'Tornado',
+            duration: 7,
+            effect: () => {
+                // Tornado creates a path of destruction
+                const startX = Math.floor(Math.random() * city.width);
+                const startY = Math.floor(Math.random() * city.height);
+                let damage = 0;
+                
+                // Create a winding path
+                let x = startX;
+                let y = startY;
+                for (let i = 0; i < 10; i++) {
+                    x += Math.floor(Math.random() * 3) - 1;
+                    y += Math.floor(Math.random() * 3) - 1;
+                    
+                    // Ensure we're still in the grid
+                    x = Math.max(0, Math.min(city.width - 1, x));
+                    y = Math.max(0, Math.min(city.height - 1, y));
+                    
+                    // Damage buildings in a small radius around the path
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            const cell = city.getCell(x + dx, y + dy);
+                            if (cell && cell.occupied && cell.type !== 'water') {
+                                if (Math.random() < 0.7) {
+                                    cell.damaged = true;
+                                    damage++;
+                                }
+                                
+                                // 20% chance to destroy completely
+                                if (Math.random() < 0.2) {
+                                    cell.type = 'grass';
+                                    cell.occupied = false;
+                                    cell.damaged = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return damage;
+            },
+            recoveryMessage: (damage) => `The tornado has dissipated! ${damage} buildings were in its path.`
+        }
+    };
+    
+    // Helper function to check if a tile is near water
+    function isNearWater(x, y) {
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const cell = city.getCell(x + dx, y + dy);
+                if (cell && cell.type === 'water') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    // Helper function to damage random buildings
+    function damageRandomBuildings(count, filter = null, destroyChance = 0) {
+        let damaged = 0;
+        const candidates = [];
+        
+        // Find all occupied cells that match the filter
+        for (let y = 0; y < city.height; y++) {
+            for (let x = 0; x < city.width; x++) {
+                const cell = city.getCell(x, y);
+                if (cell && cell.occupied && cell.type !== 'water') {
+                    if (!filter || filter(cell)) {
+                        candidates.push(cell);
+                    }
+                }
+            }
+        }
+        
+        // Shuffle and take the first 'count' buildings
+        shuffleArray(candidates);
+        for (let i = 0; i < Math.min(count, candidates.length); i++) {
+            const cell = candidates[i];
+            
+            // Check if we should destroy the building
+            if (Math.random() < destroyChance) {
+                cell.type = 'grass';
+                cell.occupied = false;
+                cell.damaged = false;
+            } else {
+                cell.damaged = true;
+            }
+            
+            damaged++;
+        }
+        
+        return damaged;
+    }
+    
+    // Initialize game
+    function init() {
+        // Create city (20x20 grid)
+        city = new City(20, 20, false); // false = not multiplayer
+        
+        // Create renderer
+        renderer = new Renderer('game-canvas', city);
+        
+        // Add utility methods to city
+        extendCityFunctionality();
+        
+        // Set initial seasonal properties
+        city.stats.growthRate = 1.0;
+        city.stats.waterConsumption = 1.0;
+        city.stats.powerConsumption = 1.0;
+        
+        // Set up UI event listeners
+        setupUIListeners();
+        
+        // Initialize achievements
+        initializeAchievements();
+        
+        // Start game loop
+        requestAnimationFrame(gameLoop);
+        
+        // Start simulation loop
+        setInterval(simulationLoop, TIME_STEP);
+        
+        // Show welcome message
+        showMessage('Welcome to HTMLCity Standalone Mode! Start building your city.');
+    }
+    
+    // Extend city with additional functionality
+    function extendCityFunctionality() {
+        // Add a method to check if the city has a specific building type
+        city.hasBuildingType = function(buildingType) {
+            for (let y = 0; y < this.height; y++) {
+                for (let x = 0; x < this.width; x++) {
+                    const cell = this.getCell(x, y);
+                    if (cell && cell.occupied && cell.type === buildingType) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        
+        // Add method to count building types
+        city.countBuildingType = function(buildingType) {
+            let count = 0;
+            for (let y = 0; y < this.height; y++) {
+                for (let x = 0; x < this.width; x++) {
+                    const cell = this.getCell(x, y);
+                    if (cell && cell.occupied && cell.type === buildingType) {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        };
+        
+        // Enhanced save function that includes season and achievements
+        const originalSave = city.save;
+        city.save = function() {
+            // Add game state to the saved data
+            const originalReturn = originalSave.apply(this, arguments);
+            if (originalReturn) {
+                // Save additional game state
+                try {
+                    const gameState = {
+                        season: currentSeason,
+                        year: currentYear,
+                        seasonDay: seasonDay,
+                        achievements: ACHIEVEMENTS
+                    };
+                    localStorage.setItem('htmlCityGameState', JSON.stringify(gameState));
+                } catch (e) {
+                    console.error('Error saving game state:', e);
+                }
+            }
+            return originalReturn;
+        };
+        
+        // Enhanced load function that includes season and achievements
+        const originalLoad = city.load;
+        city.load = function() {
+            const originalReturn = originalLoad.apply(this, arguments);
+            if (originalReturn) {
+                // Load additional game state
+                try {
+                    const gameStateString = localStorage.getItem('htmlCityGameState');
+                    if (gameStateString) {
+                        const gameState = JSON.parse(gameStateString);
+                        currentSeason = gameState.season || 'Spring';
+                        currentYear = gameState.year || 1;
+                        seasonDay = gameState.seasonDay || 0;
+                        
+                        // Load achievements
+                        if (gameState.achievements) {
+                            for (let i = 0; i < ACHIEVEMENTS.length; i++) {
+                                if (i < gameState.achievements.length) {
+                                    ACHIEVEMENTS[i].unlocked = gameState.achievements[i].unlocked;
+                                }
+                            }
+                            updateAchievementDisplay();
+                        }
+                        
+                        // Update season display
+                        updateSeasonDisplay();
+                    }
+                } catch (e) {
+                    console.error('Error loading game state:', e);
+                }
+            }
+            return originalReturn;
+        };
+    }
+    
+    // Initialize achievements list
+    function initializeAchievements() {
+        const achievementList = document.getElementById('achievement-list');
+        achievementList.innerHTML = '';
+        
+        ACHIEVEMENTS.forEach(achievement => {
+            const achievementElem = document.createElement('div');
+            achievementElem.className = `achievement ${achievement.unlocked ? 'unlocked' : ''}`;
+            achievementElem.id = `achievement-${achievement.id}`;
+            
+            achievementElem.innerHTML = `
+                <strong>${achievement.name}</strong>
+                <p>${achievement.description}</p>
+            `;
+            
+            achievementList.appendChild(achievementElem);
+        });
+    }
+    
+    // Update achievements display
+    function updateAchievementDisplay() {
+        ACHIEVEMENTS.forEach(achievement => {
+            const achievementElem = document.getElementById(`achievement-${achievement.id}`);
+            if (achievementElem) {
+                achievementElem.className = `achievement ${achievement.unlocked ? 'unlocked' : ''}`;
+            }
+        });
+    }
+    
+    // Check achievements
+    function checkAchievements() {
+        let newAchievements = 0;
+        
+        ACHIEVEMENTS.forEach(achievement => {
+            if (!achievement.unlocked && achievement.id !== 'disaster_survival' && achievement.condition()) {
+                achievement.unlocked = true;
+                newAchievements++;
+                showMessage(`Achievement Unlocked: ${achievement.name}`);
+            }
+        });
+        
+        if (newAchievements > 0) {
+            updateAchievementDisplay();
+        }
+    }
+    
+    // Unlock disaster survival achievement
+    function unlockDisasterSurvivalAchievement() {
+        const achievement = ACHIEVEMENTS.find(a => a.id === 'disaster_survival');
+        if (achievement && !achievement.unlocked) {
+            achievement.unlocked = true;
+            updateAchievementDisplay();
+            showMessage(`Achievement Unlocked: ${achievement.name}`);
+        }
+    }
+    
+    // Update season display
+    function updateSeasonDisplay() {
+        const seasonElem = document.getElementById('season');
+        const yearElem = document.getElementById('year');
+        
+        if (seasonElem) seasonElem.textContent = currentSeason;
+        if (yearElem) yearElem.textContent = currentYear;
+        
+        // Update canvas background color based on season
+        const gameCanvas = document.getElementById('game-canvas');
+        if (gameCanvas) {
+            gameCanvas.className = ''; // Remove all season classes
+            gameCanvas.classList.add(`season-${currentSeason.toLowerCase()}`);
+        }
+    }
+    
+    // Process season change
+    function processSeasonChange() {
+        seasonDay++;
+        
+        if (seasonDay >= DAYS_PER_SEASON) {
+            seasonDay = 0;
+            
+            // Change season
+            switch (currentSeason) {
+                case 'Spring':
+                    currentSeason = 'Summer';
+                    break;
+                case 'Summer':
+                    currentSeason = 'Fall';
+                    break;
+                case 'Fall':
+                    currentSeason = 'Winter';
+                    break;
+                case 'Winter':
+                    currentSeason = 'Spring';
+                    currentYear++;
+                    break;
+            }
+            
+            updateSeasonDisplay();
+            showMessage(`Season changed to ${currentSeason}`);
+            
+            // Apply season effects
+            applySeasonEffects();
+        }
+    }
+    
+    // Apply season-specific effects
+    function applySeasonEffects() {
+        switch (currentSeason) {
+            case 'Spring':
+                // Spring boosts growth and happiness
+                city.happiness += 5;
+                city.stats.growthRate = 1.2; // 20% faster growth
+                showMessage('Spring brings growth and happiness to your city!');
+                break;
+                
+            case 'Summer':
+                // Summer increases water consumption
+                city.stats.waterConsumption = 1.3; // 30% more water use
+                city.stats.growthRate = 1.1; // 10% faster growth
+                showMessage('Summer increases water consumption in your city.');
+                
+                // Small chance of fire disaster in summer
+                if (Math.random() < 0.2 && !activeDisaster) {
+                    triggerDisaster('fire');
+                }
+                break;
+                
+            case 'Fall':
+                // Fall is normal
+                city.stats.waterConsumption = 1.0;
+                city.stats.growthRate = 1.0;
+                showMessage('Fall brings balanced conditions to your city.');
+                break;
+                
+            case 'Winter':
+                // Winter increases power consumption and slows growth
+                city.stats.powerConsumption = 1.5; // 50% more power use
+                city.stats.growthRate = 0.7; // 30% slower growth
+                city.happiness -= 3;
+                showMessage('Winter increases power consumption and slows growth.');
+                
+                // Small chance of storm in winter
+                if (Math.random() < 0.2 && !activeDisaster) {
+                    if (Math.random() < 0.5) {
+                        triggerDisaster('flood');
+                    } else {
+                        triggerDisaster('tornado');
+                    }
+                }
+                break;
+        }
+    }
+    
+    // Trigger a disaster
+    function triggerDisaster(disasterType) {
+        if (activeDisaster) {
+            showMessage(`Your city is already dealing with a ${activeDisaster.name}!`);
+            return;
+        }
+        
+        const disaster = DISASTERS[disasterType];
+        if (!disaster) return;
+        
+        activeDisaster = {
+            type: disasterType,
+            name: disaster.name,
+            timeRemaining: disaster.duration,
+            damage: 0
+        };
+        
+        // Apply initial disaster effect
+        const damage = disaster.effect();
+        activeDisaster.damage = damage;
+        
+        // Create disaster warning
+        const warningElem = document.createElement('div');
+        warningElem.className = 'disaster-warning';
+        warningElem.id = 'disaster-warning';
+        warningElem.textContent = `${disaster.name} Disaster! ${activeDisaster.timeRemaining} days remaining.`;
+        document.body.appendChild(warningElem);
+        
+        showMessage(`A ${disaster.name} has struck your city!`);
+    }
+    
+    // Process active disaster
+    function processDisaster() {
+        if (!activeDisaster) return;
+        
+        activeDisaster.timeRemaining--;
+        
+        // Update warning
+        const warningElem = document.getElementById('disaster-warning');
+        if (warningElem) {
+            warningElem.textContent = `${activeDisaster.name} Disaster! ${activeDisaster.timeRemaining} days remaining.`;
+        }
+        
+        // Apply ongoing effects
+        applyDisasterEffects();
+        
+        // Check if disaster has ended
+        if (activeDisaster.timeRemaining <= 0) {
+            resolveDisaster();
+        }
+    }
+    
+    // Apply ongoing disaster effects
+    function applyDisasterEffects() {
+        switch (activeDisaster.type) {
+            case 'fire':
+                // Fire reduces happiness and may spread
+                city.happiness -= 1;
+                if (Math.random() < 0.2) {
+                    // 20% chance to damage another building each day
+                    damageRandomBuildings(1, (cell) => cell.type !== 'water');
+                    activeDisaster.damage++;
+                }
+                break;
+                
+            case 'flood':
+                // Flood reduces money (cleanup costs)
+                city.money -= 100;
+                city.happiness -= 0.5;
+                break;
+                
+            case 'earthquake':
+                // Earthquake reduces happiness significantly
+                city.happiness -= 2;
+                // Aftershocks
+                if (Math.random() < 0.1) {
+                    damageRandomBuildings(1);
+                    activeDisaster.damage++;
+                    showMessage('Aftershock!');
+                }
+                break;
+                
+            case 'tornado':
+                // Tornado reduces money and happiness
+                city.money -= 200;
+                city.happiness -= 1;
+                break;
+        }
+    }
+    
+    // Resolve disaster when it ends
+    function resolveDisaster() {
+        const disaster = DISASTERS[activeDisaster.type];
+        
+        showMessage(disaster.recoveryMessage(activeDisaster.damage));
+        
+        // Remove disaster warning
+        const warningElem = document.getElementById('disaster-warning');
+        if (warningElem) {
+            warningElem.remove();
+        }
+        
+        // Repair damaged buildings
+        for (let y = 0; y < city.height; y++) {
+            for (let x = 0; x < city.width; x++) {
+                const cell = city.getCell(x, y);
+                if (cell && cell.damaged) {
+                    cell.damaged = false;
+                }
+            }
+        }
+        
+        // Unlock achievement
+        unlockDisasterSurvivalAchievement();
+        
+        activeDisaster = null;
+    }
+    
+    // Main game loop (handles rendering)
+    function gameLoop() {
+        // Extend renderer to visualize damaged buildings and seasonal effects
+        const originalRender = renderer.render;
+        renderer.render = function() {
+            // Call the original render method
+            originalRender.apply(this, arguments);
+            
+            // Draw damaged buildings and seasonal effects
+            drawDamageAndSeasonalEffects();
+        };
+        
+        // Render the city
+        renderer.render();
+        
+        // Continue the game loop
+        requestAnimationFrame(gameLoop);
+    }
+    
+    // Draw damage and seasonal effects on top of normal rendering
+    function drawDamageAndSeasonalEffects() {
+        const ctx = renderer.ctx;
+        
+        // Draw seasonal effects
+        for (let y = 0; y < city.height; y++) {
+            for (let x = 0; x < city.width; x++) {
+                const cell = city.getCell(x, y);
+                if (!cell) continue;
+                
+                const screenPos = isoToScreen(x, y);
+                screenPos.x += renderer.offsetX;
+                screenPos.y += renderer.offsetY;
+                
+                // Draw seasonal overlays
+                switch (currentSeason) {
+                    case 'Winter':
+                        // Draw snow
+                        if (cell.type !== 'water' && Math.random() < 0.5) {
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                            ctx.beginPath();
+                            ctx.moveTo(screenPos.x, screenPos.y - TILE_HEIGHT / 2);
+                            ctx.lineTo(screenPos.x + TILE_WIDTH / 2, screenPos.y);
+                            ctx.lineTo(screenPos.x, screenPos.y + TILE_HEIGHT / 2);
+                            ctx.lineTo(screenPos.x - TILE_WIDTH / 2, screenPos.y);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        break;
+                        
+                    case 'Fall':
+                        // Draw fallen leaves
+                        if (cell.type !== 'water' && Math.random() < 0.3) {
+                            ctx.fillStyle = 'rgba(210, 105, 30, 0.2)';
+                            ctx.beginPath();
+                            ctx.moveTo(screenPos.x, screenPos.y - TILE_HEIGHT / 2);
+                            ctx.lineTo(screenPos.x + TILE_WIDTH / 2, screenPos.y);
+                            ctx.lineTo(screenPos.x, screenPos.y + TILE_HEIGHT / 2);
+                            ctx.lineTo(screenPos.x - TILE_WIDTH / 2, screenPos.y);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                        break;
+                }
+                
+                // Draw damage effect for damaged buildings
+                if (cell.damaged) {
+                    // Draw cracked/damaged overlay
+                    ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+                    ctx.lineWidth = 2;
+                    
+                    // Draw cracks
+                    ctx.beginPath();
+                    ctx.moveTo(screenPos.x - TILE_WIDTH / 4, screenPos.y - TILE_HEIGHT / 4);
+                    ctx.lineTo(screenPos.x + TILE_WIDTH / 4, screenPos.y + TILE_HEIGHT / 4);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(screenPos.x + TILE_WIDTH / 4, screenPos.y - TILE_HEIGHT / 4);
+                    ctx.lineTo(screenPos.x - TILE_WIDTH / 4, screenPos.y + TILE_HEIGHT / 4);
+                    ctx.stroke();
+                    
+                    // Draw smoke for fire disasters
+                    if (activeDisaster && activeDisaster.type === 'fire') {
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        ctx.beginPath();
+                        ctx.arc(screenPos.x, screenPos.y - TILE_HEIGHT, 5 + Math.random() * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+        
+        // Draw active disaster effects across the whole map
+        if (activeDisaster) {
+            switch (activeDisaster.type) {
+                case 'flood':
+                    // Draw water overlay
+                    ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+                    ctx.fillRect(0, 0, renderer.canvas.width, renderer.canvas.height);
+                    break;
+                    
+                case 'tornado':
+                    // Draw wind effect
+                    for (let i = 0; i < 5; i++) {
+                        const x = Math.random() * renderer.canvas.width;
+                        const y = Math.random() * renderer.canvas.height;
+                        const length = 30 + Math.random() * 50;
+                        const angle = Math.random() * Math.PI * 2;
+                        
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length);
+                        ctx.stroke();
+                    }
+                    break;
+                    
+                case 'earthquake':
+                    // Draw screen shake effect by slightly offsetting the render
+                    renderer.offsetX += (Math.random() - 0.5) * 4;
+                    renderer.offsetY += (Math.random() - 0.5) * 4;
+                    break;
+            }
+        }
+    }
+    
+    // Simulation loop (handles game logic updates)
+    function simulationLoop() {
+        // Calculate time delta
+        const now = Date.now();
+        const delta = now - lastUpdate;
+        lastUpdate = now;
+        
+        // Process season and disaster logic
+        processSeasonChange();
+        if (activeDisaster) {
+            processDisaster();
+        }
+        
+        // Enhance city simulate method to handle seasonal effects
+        const originalSimulate = city.simulate;
+        city.simulate = function(delta) {
+            // Apply seasonal effects to resource consumption
+            const waterConsumption = this.stats.waterConsumption || 1.0;
+            const powerConsumption = this.stats.powerConsumption || 1.0;
+            const growthRate = this.stats.growthRate || 1.0;
+            
+            // Store original values so we can restore them
+            const originalWater = this.water;
+            const originalPower = this.power;
+            
+            // Apply consumption modifiers from seasons
+            this.water *= waterConsumption;
+            this.power *= powerConsumption;
+            
+            // Apply original simulation
+            originalSimulate.apply(this, arguments);
+            
+            // Restore original values
+            this.water = originalWater;
+            this.power = originalPower;
+            
+            // Apply population growth based on happiness and growth rate
+            if (this.happiness > 50 && Math.random() < 0.1 * growthRate) {
+                // Calculate potential new residents based on happiness
+                const growthPotential = Math.ceil((this.happiness - 50) / 10);
+                const newResidents = Math.max(1, Math.floor(growthPotential * growthRate));
+                
+                // Add new residents to a random residential building
+                const residentialBuildings = [];
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        const cell = this.getCell(x, y);
+                        if (cell && cell.occupied) {
+                            const buildingInfo = getBuildingInfo(cell.type);
+                            if (buildingInfo && buildingInfo.category === 'residential') {
+                                residentialBuildings.push({ x, y, type: cell.type });
+                            }
+                        }
+                    }
+                }
+                
+                if (residentialBuildings.length > 0) {
+                    const randomBuilding = residentialBuildings[Math.floor(Math.random() * residentialBuildings.length)];
+                    const buildingInfo = getBuildingInfo(randomBuilding.type);
+                    
+                    // Add residents
+                    this.population += newResidents;
+                    
+                    // Update stats
+                    this.updateCityStats();
+                    
+                    // Show message for significant growth
+                    if (newResidents >= 5) {
+                        showMessage(`Your city attracts ${newResidents} new residents!`);
+                    }
+                }
+            }
+            
+            // Decrease happiness if essential resources are missing
+            if (this.water < 0) {
+                this.happiness = Math.max(0, this.happiness - 0.2);
+                if (Math.random() < 0.05) {
+                    showMessage("Citizens are unhappy about water shortages!");
+                }
+            }
+            
+            if (this.power < 0) {
+                this.happiness = Math.max(0, this.happiness - 0.2);
+                if (Math.random() < 0.05) {
+                    showMessage("Citizens are unhappy about power outages!");
+                }
+            }
+            
+            // Update UI
+            this.updateUI();
+        };
+        
+        // Update city simulation
+        city.simulate(delta);
+        
+        // Check achievements
+        checkAchievements();
+    }
+    
+    // Set up UI event listeners
+    function setupUIListeners() {
+        // Building buttons
+        const buildingButtons = document.querySelectorAll('.building-btn');
+        buildingButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove selected class from all buttons
+                buildingButtons.forEach(btn => btn.classList.remove('selected'));
+                
+                // Add selected class to clicked button
+                button.classList.add('selected');
+                
+                // Get building data
+                const buildingType = button.getAttribute('data-building');
+                const cost = parseInt(button.getAttribute('data-cost'), 10);
+                
+                // Select building
+                city.selectedBuilding = { type: buildingType, cost: cost };
+                city.bulldozerMode = false;
+                
+                // Remove active class from bulldozer button
+                document.getElementById('bulldozer-btn').classList.remove('active');
+            });
+        });
+        
+        // Bulldozer button
+        const bulldozerBtn = document.getElementById('bulldozer-btn');
+        bulldozerBtn.addEventListener('click', () => {
+            city.toggleBulldozer();
+            
+            if (city.bulldozerMode) {
+                // Add active class to bulldozer button
+                bulldozerBtn.classList.add('active');
+                
+                // Remove selected class from all building buttons
+                buildingButtons.forEach(btn => btn.classList.remove('selected'));
+            } else {
+                // Remove active class from bulldozer button
+                bulldozerBtn.classList.remove('active');
+            }
+        });
+        
+        // Save button
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', () => {
+            city.save();
+        });
+        
+        // Load button
+        const loadBtn = document.getElementById('load-btn');
+        loadBtn.addEventListener('click', () => {
+            if (city.load()) {
+                renderer.centerView();
+            }
+        });
+        
+        // Tab buttons
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                
+                // Show selected tab
+                const tabContent = document.getElementById(tabName);
+                if (tabContent) {
+                    tabContent.classList.add('active');
+                }
+                
+                // Remove active class from all tab buttons
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+            });
+        });
+        
+        // Disaster buttons
+        const disasterButtons = document.querySelectorAll('.disaster-button');
+        disasterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const disasterType = button.getAttribute('data-disaster');
+                triggerDisaster(disasterType);
+            });
+        });
+    }
+    
+    // Show a message to the user
+    function showMessage(message) {
+        const messageContainer = document.getElementById('message-container');
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        messageElement.textContent = message;
+        
+        messageContainer.appendChild(messageElement);
+        
+        // Remove the message after a delay
+        setTimeout(() => {
+            messageElement.style.opacity = '0';
+            setTimeout(() => {
+                if (messageContainer.contains(messageElement)) {
+                    messageContainer.removeChild(messageElement);
+                }
+            }, 500);
+        }, 3000);
+    }
+    
+    // Utility function to shuffle an array
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    
+    // Start the game when the page loads
+    window.addEventListener('load', init);
+    </script>
+</body>
+</html>
