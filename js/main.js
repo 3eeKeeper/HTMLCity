@@ -6,7 +6,6 @@
 let city;
 let renderer;
 let socket;
-let auth;
 
 // Game timing
 let lastUpdate = Date.now();
@@ -14,8 +13,6 @@ const TIME_STEP = 1000; // Simulate city every second
 
 // Game state
 let gameState = {
-  isLoggedIn: false,
-  user: null,
   currentCity: null,
   cities: [],
   players: {},
@@ -27,136 +24,14 @@ let gameState = {
 
 // Initialize game
 async function init() {
-  // Initialize auth
-  auth = new Auth();
-  
-  // Check if user is logged in
-  const loggedIn = await auth.checkLoggedIn();
-  
-  if (loggedIn) {
-    // Show dashboard for logged in user
-    showDashboard();
-  } else {
-    // Show login screen
-    showLoginScreen();
-  }
-  
   // Set up UI event listeners
   setupUIListeners();
-}
-
-// Show login screen
-function showLoginScreen() {
-  const gameContainer = document.querySelector('.game-container');
-  gameContainer.innerHTML = `
-    <div class="auth-container">
-      <div class="auth-form">
-        <h1>HTMLCity</h1>
-        <h2>Multiplayer City Builder</h2>
-        
-        <div class="form-toggle">
-          <button id="login-toggle" class="active">Login</button>
-          <button id="register-toggle">Register</button>
-        </div>
-        
-        <form id="login-form">
-          <div class="form-group">
-            <label for="login-email">Email</label>
-            <input type="email" id="login-email" required>
-          </div>
-          <div class="form-group">
-            <label for="login-password">Password</label>
-            <input type="password" id="login-password" required>
-          </div>
-          <button type="submit" class="btn-primary">Login</button>
-          <div id="login-error" class="error-message"></div>
-        </form>
-        
-        <form id="register-form" style="display: none;">
-          <div class="form-group">
-            <label for="register-username">Username</label>
-            <input type="text" id="register-username" required minlength="3" maxlength="20">
-          </div>
-          <div class="form-group">
-            <label for="register-email">Email</label>
-            <input type="email" id="register-email" required>
-          </div>
-          <div class="form-group">
-            <label for="register-password">Password</label>
-            <input type="password" id="register-password" required minlength="8">
-          </div>
-          <div class="form-group">
-            <label for="register-confirm">Confirm Password</label>
-            <input type="password" id="register-confirm" required>
-          </div>
-          <button type="submit" class="btn-primary">Register</button>
-          <div id="register-error" class="error-message"></div>
-        </form>
-      </div>
-    </div>
-  `;
-  
-  // Set up form toggle
-  const loginToggle = document.getElementById('login-toggle');
-  const registerToggle = document.getElementById('register-toggle');
-  const loginForm = document.getElementById('login-form');
-  const registerForm = document.getElementById('register-form');
-  
-  loginToggle.addEventListener('click', () => {
-    loginToggle.classList.add('active');
-    registerToggle.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-  });
-  
-  registerToggle.addEventListener('click', () => {
-    registerToggle.classList.add('active');
-    loginToggle.classList.remove('active');
-    registerForm.style.display = 'block';
-    loginForm.style.display = 'none';
-  });
-  
-  // Set up form submission
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    try {
-      await auth.login(email, password);
-      showDashboard();
-    } catch (err) {
-      document.getElementById('login-error').textContent = err.message;
-    }
-  });
-  
-  registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const username = document.getElementById('register-username').value;
-    const email = document.getElementById('register-email').value;
-    const password = document.getElementById('register-password').value;
-    const confirm = document.getElementById('register-confirm').value;
-    
-    if (password !== confirm) {
-      document.getElementById('register-error').textContent = 'Passwords do not match';
-      return;
-    }
-    
-    try {
-      await auth.register(username, email, password);
-      showDashboard();
-    } catch (err) {
-      document.getElementById('register-error').textContent = err.message;
-    }
-  });
 }
 
 // Show dashboard screen
 async function showDashboard() {
   // Get user's cities
-  const cities = await auth.getUserCities();
+  const cities = JSON.parse(localStorage.getItem('cities')) || [];
   gameState.cities = cities;
   
   const gameContainer = document.querySelector('.game-container');
@@ -164,10 +39,6 @@ async function showDashboard() {
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>HTMLCity</h1>
-        <div class="user-info">
-          <span>Welcome, ${auth.user.username}</span>
-          <button id="logout-btn" class="btn-secondary">Logout</button>
-        </div>
       </div>
       
       <div class="dashboard-content">
@@ -215,11 +86,6 @@ async function showDashboard() {
   `;
   
   // Setup dashboard event listeners
-  document.getElementById('logout-btn').addEventListener('click', () => {
-    auth.logout();
-    showLoginScreen();
-  });
-  
   // City list click handlers
   document.querySelectorAll('.city-card .play-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -253,13 +119,17 @@ async function loadLeaderboard(sort) {
   leaderboardList.innerHTML = '<div class="loading">Loading leaderboard...</div>';
   
   try {
-    const response = await fetch(`/api/cities/leaderboard?sort=${sort}`, {
-      headers: {
-        'Authorization': `Bearer ${auth.token}`
-      }
+    // Simulate fetching leaderboard data
+    const response = await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          cities: JSON.parse(localStorage.getItem('cities')) || []
+        });
+      }, 1000);
     });
     
-    const data = await response.json();
+    const data = response;
     
     if (!data.success) {
       leaderboardList.innerHTML = '<div class="error">Failed to load leaderboard</div>';
@@ -296,7 +166,7 @@ async function loadLeaderboard(sort) {
         <span class="leaderboard-owner">Owner</span>
         <span class="leaderboard-value">${sortLabel}</span>
       </div>
-      ${data.cities.map((city, index) => `
+      ${data.cities.sort((a, b) => b.resources[sort] - a.resources[sort]).map((city, index) => `
         <div class="leaderboard-item">
           <span class="leaderboard-rank">${index + 1}</span>
           <span class="leaderboard-name">${city.name}</span>
@@ -367,39 +237,49 @@ function showNewCityModal() {
     const description = document.getElementById('city-description').value;
     const isPublic = document.getElementById('city-public').checked;
     
-    try {
-      const response = await fetch('/api/cities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.token}`
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          isPublic
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        document.getElementById('city-error').textContent = data.message;
-        return;
+    // Create new city object
+    const newCity = {
+      _id: `${Date.now()}-${Math.random()}`,
+      name,
+      description,
+      isPublic,
+      resources: {
+        money: 1000,
+        population: 0,
+        happiness: 100,
+        power: 0,
+        water: 0,
+        jobs: 0
+      },
+      buildings: {
+        total: 0,
+        residential: 0,
+        commercial: 0,
+        industrial: 0,
+        utilities: 0,
+        special: 0,
+        transportation: 0,
+        decorative: 0
+      },
+      owner: {
+        username: 'You',
+        userId: 'your-user-id'
       }
-      
-      // Add city to state
-      gameState.cities.push(data.city);
-      
-      // Close modal
-      document.body.removeChild(modal);
-      
-      // Refresh dashboard
-      showDashboard();
-    } catch (err) {
-      console.error('Error creating city:', err);
-      document.getElementById('city-error').textContent = 'Failed to create city';
-    }
+    };
+    
+    // Save to localStorage
+    const cities = JSON.parse(localStorage.getItem('cities')) || [];
+    cities.push(newCity);
+    localStorage.setItem('cities', JSON.stringify(cities));
+    
+    // Add city to state
+    gameState.cities.push(newCity);
+    
+    // Close modal
+    document.body.removeChild(modal);
+    
+    // Refresh dashboard
+    showDashboard();
   });
 }
 
@@ -409,7 +289,7 @@ async function startGame(selectedCity) {
   
   // Create city (20x20 grid)
   city = new City(20, 20, true);
-  city.playerId = auth.user.id;
+  city.playerId = 'your-user-id';
   
   // Create renderer
   renderer = new Renderer('game-canvas', city);
@@ -594,11 +474,7 @@ function showGameUI() {
 
 // Connect to WebSocket server
 function connectSocket() {
-  socket = io('http://localhost:3000', {
-    auth: {
-      token: auth.token
-    }
-  });
+  socket = io('http://localhost:3000');
   
   // Setup socket event handlers
   socket.on('connect', () => {
@@ -1156,132 +1032,89 @@ function createMessageContainer() {
   return container;
 }
 
-// Authentication class
-class Auth {
-  constructor() {
-    this.token = localStorage.getItem('token');
-    this.user = JSON.parse(localStorage.getItem('user') || 'null');
-  }
-  
-  // Check if user is logged in
-  async checkLoggedIn() {
-    if (!this.token) return false;
+// Initialize the game when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the game page (canvas exists)
+    const canvas = document.getElementById('game-canvas');
+    if (!canvas) {
+        // We're on the dashboard, initialize it
+        init();
+        return;
+    }
     
-    try {
-      const response = await fetch('/api/users/me', {
-        headers: {
-          'Authorization': `Bearer ${this.token}`
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        this.logout();
-        return false;
-      }
-      
-      this.user = data.user;
-      localStorage.setItem('user', JSON.stringify(this.user));
-      return true;
-    } catch (err) {
-      console.error('Error checking login status:', err);
-      this.logout();
-      return false;
-    }
-  }
-  
-  // Login user
-  async login(email, password) {
-    try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Login failed');
-      }
-      
-      this.token = data.token;
-      this.user = data.user;
-      
-      localStorage.setItem('token', this.token);
-      localStorage.setItem('user', JSON.stringify(this.user));
-      
-      return true;
-    } catch (err) {
-      console.error('Login error:', err);
-      throw err;
-    }
-  }
-  
-  // Register user
-  async register(username, email, password) {
-    try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, email, password })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Registration failed');
-      }
-      
-      this.token = data.token;
-      this.user = data.user;
-      
-      localStorage.setItem('token', this.token);
-      localStorage.setItem('user', JSON.stringify(this.user));
-      
-      return true;
-    } catch (err) {
-      console.error('Registration error:', err);
-      throw err;
-    }
-  }
-  
-  // Logout user
-  logout() {
-    this.token = null;
-    this.user = null;
+    const ctx = canvas.getContext('2d');
     
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  }
-  
-  // Get user's cities
-  async getUserCities() {
-    try {
-      const response = await fetch('/api/cities', {
-        headers: {
-          'Authorization': `Bearer ${this.token}`
+    // Set canvas size to fill the game area
+    function resizeCanvas() {
+        const gameArea = document.querySelector('.game-area');
+        if (gameArea) {
+            canvas.width = gameArea.clientWidth;
+            canvas.height = gameArea.clientHeight;
         }
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to load cities');
-      }
-      
-      return data.cities;
-    } catch (err) {
-      console.error('Error loading cities:', err);
-      return [];
     }
-  }
-}
+    
+    // Initial resize and setup resize listener
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Initialize the city building system
+    if (typeof City !== 'undefined' && typeof Renderer !== 'undefined') {
+        // Create a basic city for testing if we're not in a game session
+        if (!city) {
+            city = new City(20, 20, false); // 20x20 grid, single player mode
+            city.resources.money = 5000; // Starting money
+        }
+        
+        // Create renderer if it doesn't exist
+        if (!renderer) {
+            renderer = new Renderer('game-canvas', city);
+            renderer.resizeCanvas();
+            renderer.centerView();
+        }
+        
+        // Start the render loop
+        function render() {
+            renderer.render();
+            requestAnimationFrame(render);
+        }
+        render();
+        
+        // Start simulation loop for single player
+        if (!city.multiplayer) {
+            setInterval(() => {
+                city.simulate(1000); // Simulate 1 second
+            }, 1000);
+        }
+    } else {
+        // Fallback grid drawing if city system not loaded
+        ctx.fillStyle = '#4a5568';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw a grid for testing
+        ctx.strokeStyle = '#2d3748';
+        ctx.lineWidth = 1;
+        const gridSize = 32;
+        
+        for (let x = 0; x < canvas.width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        
+        for (let y = 0; y < canvas.height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+    }
+});
 
-// Start the game when the page loads
-window.addEventListener('load', init);
+// Only initialize the dashboard on load if we're not already in a game
+window.addEventListener('load', () => {
+    // Check if we're on the main page (no canvas)
+    if (!document.getElementById('game-canvas')) {
+        init();
+    }
+});

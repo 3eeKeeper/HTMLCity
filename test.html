@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTMLCity - Test City Builder</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>HTMLCity</h1>
+                <h3>Test City</h3>
+            </div>
+            <div class="resources">
+                <div class="resource">
+                    <span class="label">Money:</span>
+                    <span id="money">$5000</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Population:</span>
+                    <span id="population">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Happiness:</span>
+                    <span id="happiness">100%</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Power:</span>
+                    <span id="power">0</span>
+                </div>
+                <div class="resource">
+                    <span class="label">Water:</span>
+                    <span id="water">0</span>
+                </div>
+            </div>
+            <div class="building-menu">
+                <h3>Buildings</h3>
+                <div class="building-group">
+                    <h4>Residential</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="residential_small" data-cost="100">
+                            Small House ($100)
+                        </button>
+                        <button class="building-btn" data-building="residential_medium" data-cost="1000">
+                            Apartment ($1000)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Commercial</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="commercial_small" data-cost="150">
+                            Small Shop ($150)
+                        </button>
+                    </div>
+                </div>
+                <div class="building-group">
+                    <h4>Transportation</h4>
+                    <div class="building-buttons">
+                        <button class="building-btn" data-building="road" data-cost="10">
+                            Road ($10)
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="bulldozer-btn">Bulldozer</button>
+            </div>
+        </div>
+        <div class="game-area">
+            <canvas id="game-canvas"></canvas>
+        </div>
+    </div>
+    
+    <!-- Load game scripts -->
+    <script src="js/city.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/main.js"></script>
+    
+    <!-- Initialize test city -->
+    <script>
+        // Wait for scripts to load
+        window.addEventListener('load', () => {
+            // Set up building buttons
+            document.querySelectorAll('.building-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove selected class from all buttons
+                    document.querySelectorAll('.building-btn').forEach(btn => btn.classList.remove('selected'));
+                    
+                    // Add selected class to clicked button
+                    button.classList.add('selected');
+                    
+                    // Get building data
+                    const buildingType = button.getAttribute('data-building');
+                    const cost = parseInt(button.getAttribute('data-cost'), 10);
+                    
+                    // Select building
+                    if (city) {
+                        city.selectedBuilding = { type: buildingType, cost: cost };
+                        city.bulldozerMode = false;
+                    }
+                    
+                    // Remove active class from bulldozer button
+                    document.getElementById('bulldozer-btn').classList.remove('active');
+                });
+            });
+            
+            // Bulldozer button
+            document.getElementById('bulldozer-btn').addEventListener('click', () => {
+                if (city) {
+                    city.toggleBulldozer();
+                    
+                    if (city.bulldozerMode) {
+                        document.getElementById('bulldozer-btn').classList.add('active');
+                        document.querySelectorAll('.building-btn').forEach(btn => btn.classList.remove('selected'));
+                    } else {
+                        document.getElementById('bulldozer-btn').classList.remove('active');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

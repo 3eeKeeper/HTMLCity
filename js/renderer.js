@@ -233,7 +233,8 @@ class Renderer {
             
             // Then, if it has a building, draw the building on top
             if (cell.occupied && cell.type !== 'grass' && cell.type !== 'water') {
-                drawBuilding(this.ctx, cell.x, cell.y, cell.type, this.offsetX, this.offsetY);
+                //drawBuilding(this.ctx, cell.x, cell.y, cell.type, this.offsetX, this.offsetY);
+                drawBuildingPlaceholder(this.ctx, cell.x, cell.y, TILE_WIDTH, TILE_HEIGHT, cell.type, '#8e44ad');
             }
             
             // Draw hover effect if this is the hovered tile
@@ -276,3 +277,39 @@ class Renderer {
         this.ctx.stroke();
     }
 }
+
+// Add this function to draw buildings without images
+function drawBuildingPlaceholder(ctx, x, y, width, height, buildingType, color) {
+    // Draw building base
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+    
+    // Draw building outline
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+    
+    // Add building type indicator
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const labels = {
+        'residential_small': '🏠',
+        'residential_medium': '🏢',
+        'commercial_small': '🏪',
+        'commercial_medium': '🏬',
+        'industrial_small': '🏭',
+        'industrial_medium': '🏭',
+        'power_plant': '⚡',
+        'water_plant': '💧',
+        'park': '🌳',
+        'police_station': '🚓'
+    };
+    
+    ctx.fillText(labels[buildingType] || '🏗️', x + width/2, y + height/2);
+}
+
+// Update the image loading code to use placeholders if images fail
+// ...existing code...
